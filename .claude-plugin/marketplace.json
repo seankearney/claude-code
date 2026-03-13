@@ -1,0 +1,13 @@
+{
+  "name": "my-plugins",
+  "owner": {
+    "name": "Sean Kearney"
+  },
+  "plugins": [
+    {
+      "name": "dotnet-service-review",
+      "source": "./plugins/dotnet-service-review",
+      "description": "Adds a /dotnet-service-review skill for .net based code reviews"
+    }
+  ]
+}

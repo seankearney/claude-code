@@ -1,0 +1,12 @@
+{
+  "name": "dotnet-service-review",
+  "version": "0.1.0",
+  "description": "Full .NET service health reviews using three specialist agents (architect, code reviewer, test analyst) working in parallel. Scores code quality, .NET practices, testing, security, and maintainability.",
+  "author": {
+    "name": "Sean Kearney",
+    "url": "https://seankearney.com"
+  },
+  "repository": "https://github.com/seankearney/claude-code",
+  "license": "MIT",
+  "keywords": ["dotnet", "csharp", "service-review", "code-quality", "security", "architecture", "health-check"]
+}
