@@ -38,7 +38,7 @@ RoslynMCP is your **primary tool**. It provides compiler-grade analysis that tex
 | `get_symbol_info` | Type metadata — accessibility, inheritance, interface implementation |
 | `get_type_hierarchy` | Base/derived types — architecture via inheritance structures |
 
-**Detection:** Call `get_code_metrics` or `search_symbols` at session start. If unavailable, rely on Glob/Grep/Read.
+**Detection:** See Step 0 below — you MUST probe RoslynMCP before any analysis begins.
 
 ### GitNexus (Optional)
 
@@ -49,6 +49,25 @@ If available, use `context` to understand how key types integrate across the bro
 ## Institutional Context
 
 Before starting analysis, check if `SERVICE-REVIEW-CONTEXT.md` exists in the repo root. If it does, read it — it contains domain knowledge, known issues, team context, or security history provided by someone who knows the service. Factor this into your analysis where relevant (e.g., if it mentions a known SQL injection pattern, verify it and include it). If it doesn't exist, proceed without it.
+
+---
+
+## Step 0: RoslynMCP Probe (MANDATORY)
+
+Before any analysis, you MUST probe RoslynMCP availability:
+
+1. Attempt to call `get_code_metrics` on any `.cs` file in scope
+2. Record the result:
+   - **available** — call succeeded, metrics data returned
+   - **unavailable** — tool not found, MCP server not running, or error
+
+This probe is **non-blocking** — if unavailable, proceed with Glob/Grep/Read fallbacks. But you MUST:
+- Include the `## Review Tools` section in your output (see Output Format)
+- If unavailable, include this warning at the top of your output, immediately before `## Critical Findings`:
+
+> **⚠️ RoslynMCP Unavailable**
+>
+> RoslynMCP was not available for this review. Code metrics (cyclomatic complexity, maintainability index) and compiler diagnostics are absent. Findings rely on text-based analysis only. To enable deeper analysis, ensure the `mcp-roslyn` server is running and the solution builds successfully.
 
 ---
 
@@ -144,10 +163,19 @@ Return your findings as **markdown** in exactly this structure.
 **IMPORTANT — Evidence Requirements:**
 - Every finding MUST include `file:line` references
 - For critical findings (SQL injection, hardcoded secrets, security issues), include **inline code snippets** showing the actual problematic code. Use fenced code blocks with the language identifier.
-- If RoslynMCP is available, include the Roslyn Code Metrics table in Code Quality
+- MUST include the `## Review Tools` section showing RoslynMCP status. If RoslynMCP is available, include the Roslyn Code Metrics table in Code Quality
 - Don't just describe problems — show the code that proves them
 
 ```markdown
+## Review Tools
+
+| Tool | Status | Impact |
+| ---- | ------ | ------ |
+| RoslynMCP | ✅ available / ⚠️ unavailable | {If unavailable: "No code metrics or compiler diagnostics"} |
+| Glob/Grep/Read | ✅ available | Core text-based analysis |
+
+{If RoslynMCP unavailable, include the warning block from Step 0 here}
+
 ## Critical Findings
 
 - {Auto-red triggers or "None"}

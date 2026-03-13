@@ -14,6 +14,7 @@
 | **Scope**                    | `{repo root or subdirectory path}` |
 | **Reviewed By**              | dotnet-service-review |
 | **Review Date**              | {YYYY-MM-DD}          |
+| **RoslynMCP**                | ✅ available / ⚠️ unavailable |
 
 ---
 
@@ -320,9 +321,19 @@ block-beta
 
 ## Additional Notes
 
-{Other observations, context, caveats. Include tool availability:}
+### Tool Availability
 
-```
-Tools Available: {Core / Core + GitNexus / Core + RoslynMCP / Core + GitNexus + RoslynMCP + Confluence}
-```
-```
+| Tool | Agent | Status | Impact |
+| ---- | ----- | ------ | ------ |
+| RoslynMCP | dotnet-code-reviewer | ✅ / ⚠️ | {If unavailable: "Code metrics and compiler diagnostics absent"} |
+| RoslynMCP | dotnet-modernization-analyst | ✅ / ⚠️ | {If unavailable: "Framework compatibility analysis text-based only"} |
+| GitNexus | dotnet-architect | ✅ / ⚠️ | {If unavailable: "Cross-repo integration context absent"} |
+| Confluence | dotnet-architect | ✅ / ⚠️ | {If unavailable: "Wiki documentation section omitted"} |
+
+{If RoslynMCP was unavailable for the code reviewer, include:}
+
+> **⚠️ RoslynMCP Unavailable**
+>
+> RoslynMCP was not available during this review. The Roslyn Code Metrics table and compiler diagnostic findings are absent. Code quality and security findings rely on text-based pattern matching, which may miss issues requiring semantic analysis (type flow, nullability, captive dependencies). Re-run with `mcp-roslyn` enabled for deeper analysis.
+
+{Other observations, context, caveats.}

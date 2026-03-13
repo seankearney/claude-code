@@ -61,7 +61,7 @@ Use the `Agent` tool to launch all four simultaneously. Each agent operates with
 For each agent, provide this context in the prompt:
 - The **scope directory path** (which may be a subdirectory, not the repo root)
 - That they should read their required knowledge files
-- That they should probe for their MCP tools and note availability
+- That they MUST probe for their MCP tools at session start and include tool availability in their output (the code reviewer MUST include a `## Review Tools` section)
 - That they should return their findings in their specified output format
 - **If a scope subdirectory was specified**, include: "Limit your analysis to the directory: {scope path}. This is a focused review of one service within a larger repo."
 - **If `SERVICE-REVIEW-CONTEXT.md` was found**, include its full contents in each agent's prompt, prefixed with: "The following institutional context was provided for this review. Factor it into your analysis where relevant:"
@@ -76,6 +76,8 @@ Wait for all four agents to complete. Each returns a markdown fragment:
 - **dotnet-code-reviewer** returns: `## Critical Findings` + `### Code Quality & Design` (with Roslyn metrics table) + `### .NET Practices` + `### Security` (with inline code snippets for vulnerabilities)
 - **dotnet-test-analyst** returns: `## Build & Test Results` + `### Testing` (with trophy) + `### Maintainability` + `## Documentation Status`
 - **dotnet-modernization-analyst** returns: `## Modernization Readiness` (with Migration Complexity and Runtime & Deployment subsections)
+
+**Extract tool availability:** Check the dotnet-code-reviewer output for the `## Review Tools` section. Record whether RoslynMCP was `available` or `unavailable`. Surface this in the final report's Additional Notes section.
 
 ### Step 3: Record Modernization Readiness Score
 
@@ -120,7 +122,7 @@ Combine the agent outputs into a single report following the template structure:
 10. **Modernization Readiness** — from dotnet-modernization-analyst (separate from health score)
 11. **Documentation Details** — from dotnet-test-analyst
 12. **Recommendations** — synthesize top 3 from all agents' findings, prioritized by impact
-13. **Additional Notes** — tool availability from all four agents
+13. **Additional Notes** — MUST include the Tool Availability table (see template). If RoslynMCP was unavailable for the code reviewer, reproduce its warning block in the final report so the reader knows analysis depth was limited.
 
 ### Step 5: Write the Report
 
