@@ -6,7 +6,7 @@ A collection of [Claude Code](https://docs.anthropic.com/en/docs/claude-code) pl
 
 ### dotnet-service-review
 
-A plugin that conducts formal health reviews of .NET microservice repositories using three specialist agents working in parallel.
+A plugin that conducts formal health reviews of .NET microservice repositories using four specialist agents working in parallel.
 
 Navigate to any .NET repo and run:
 
@@ -14,7 +14,7 @@ Navigate to any .NET repo and run:
 /dotnet-service-review:dotnet-service-review
 ```
 
-Three agents launch in parallel, analyze the repo, and produce a `SERVICE-REVIEW.md` report.
+Four agents launch in parallel, analyze the repo, and produce a `SERVICE-REVIEW.md` report.
 
 **Agents:**
 
@@ -23,6 +23,7 @@ Three agents launch in parallel, analyze the repo, and produce a `SERVICE-REVIEW
 | **dotnet-architect** | Architecture, data flow, integration points | — |
 | **dotnet-code-reviewer** | SOLID, .NET practices, security, vulnerabilities | Code Quality, .NET Practices, Security |
 | **dotnet-test-analyst** | Build, tests, dependencies, documentation | Testing, Maintainability |
+| **dotnet-modernization-analyst** | Framework targeting, API compatibility, migration complexity | Modernization Readiness |
 
 **Individual skills** are also available standalone:
 
