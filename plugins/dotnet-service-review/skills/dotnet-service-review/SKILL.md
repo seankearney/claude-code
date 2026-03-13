@@ -1,13 +1,13 @@
 ---
 name: dotnet-service-review
-description: Full health review of the .NET repo in the current directory. Launches architect, code reviewer, and test analyst agents in parallel, then assembles a scored report.
+description: Full health review of the .NET repo in the current directory. Launches architect, code reviewer, test analyst, and modernization analyst agents in parallel, then assembles a scored report with health and modernization readiness scores.
 context: fork
 agent: dotnet-service-review
 ---
 
 # .NET Service Review
 
-Conduct a full health review of this repository (or a subdirectory within it) by orchestrating three specialist agents.
+Conduct a full health review of this repository (or a subdirectory within it) by orchestrating four specialist agents.
 
 ## Scope
 
@@ -21,11 +21,12 @@ This review is designed for **microservice-sized repos** (≤5 projects, ≤200 
 
 1. Scope is validated (project/file count checked against thresholds)
 2. `SERVICE-REVIEW-CONTEXT.md` is read from repo root if present (institutional knowledge)
-3. Three agents launch **in parallel** on the scoped directory:
+3. Four agents launch **in parallel** on the scoped directory:
    - **dotnet-architect** — architecture, data flow diagram, integration points
    - **dotnet-code-reviewer** — code quality, .NET practices, security
    - **dotnet-test-analyst** — build, tests, testing trophy, maintainability
-4. Results are collected and assembled into a single scored report
+   - **dotnet-modernization-analyst** — migration complexity, runtime/deployment, modernization readiness
+4. Results are collected and assembled into a single scored report (health score + separate modernization readiness score)
 5. Report is written to `SERVICE-REVIEW.md` in the repo root
 
 ## Recommended MCP Servers
@@ -44,3 +45,4 @@ Run any agent standalone:
 - `/dotnet-service-review:architect` — just the architecture analysis
 - `/dotnet-service-review:code-review` — just the code review
 - `/dotnet-service-review:test-analysis` — just the build/test analysis
+- `/dotnet-service-review:modernization-analysis` — just the modernization readiness assessment

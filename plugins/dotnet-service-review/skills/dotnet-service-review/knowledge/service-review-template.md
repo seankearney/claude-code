@@ -9,10 +9,11 @@
 
 |                  |                       |
 | ---------------- | --------------------- |
-| **Health Score** | 🟢 / 🟠 / 🔴            |
-| **Scope**        | `{repo root or subdirectory path}` |
-| **Reviewed By**  | dotnet-service-review |
-| **Review Date**  | {YYYY-MM-DD}          |
+| **Health Score**              | 🟢 / 🟠 / 🔴            |
+| **Modernization Readiness**  | 🟢 / 🟠 / 🔴            |
+| **Scope**                    | `{repo root or subdirectory path}` |
+| **Reviewed By**              | dotnet-service-review |
+| **Review Date**              | {YYYY-MM-DD}          |
 
 ---
 
@@ -132,6 +133,16 @@ architecture-beta
 | Security              | 🟢/🟠/🔴 | {Brief justification} |
 | Maintainability       | 🟢/🟠/🔴 | {Brief justification} |
 
+### Modernization Readiness Scores
+
+> Separate from the health score — assesses readiness for .NET modernization.
+
+| Category | Score | Notes |
+| -------- | ----- | ----- |
+| Migration Complexity | 🟢/🟠/🔴 | {Brief justification} |
+| Runtime & Deployment | 🟢/🟠/🔴 | {Brief justification} |
+| **Modernization Readiness** | **🟢/🟠/🔴** | {Composite of above two scores} |
+
 ---
 
 ## Documentation Status (Informational)
@@ -241,6 +252,53 @@ block-beta
 **Score: 🟢/🟠/🔴**
 
 {Specific observations about dependencies, activity, build health. Include dates and version numbers. For dependency freshness, verify actual latest versions — don't assume current versions are up to date. Note packages.config vs PackageReference if mixed.}
+
+---
+
+## Modernization Readiness
+
+> Assessment of migration complexity and runtime/deployment profile for .NET modernization planning.
+> **This score is separate from the overall health score.**
+
+**Modernization Readiness: 🟢/🟠/🔴**
+
+### Migration Complexity
+
+**Score: 🟢/🟠/🔴**
+
+| Signal | Status | Evidence |
+|--------|--------|----------|
+| Target Framework | 🟢/🟠/🔴 | {e.g., ".NET Framework 4.8 (`net48` in all .csproj files)"} |
+| Package Format | 🟢/🟠/🔴 | {e.g., "PackageReference in all projects"} |
+| Framework-Only APIs | 🟢/🟠/🔴 | {e.g., "System.Web used in 12 files, WCF client in 3 files"} |
+| NuGet Compatibility | 🟢/🟠/🔴 | {e.g., "2 packages need replacement: Microsoft.AspNet.WebApi, Unity"} |
+| API Surface Area | 🟢/🟠/🔴 | {e.g., "8 API controllers, 2 WCF service contracts"} |
+| Data Access | 🟢/🟠/🔴 | {e.g., "EF6 with 15 migrations, 8 stored proc calls"} |
+| Configuration | 🟢/🟠/🔴 | {e.g., "web.config with 3 custom config sections"} |
+
+**Key Migration Blockers:**
+- {List specific blockers or "None identified"}
+
+**Framework-Only API Details:**
+- {List each framework-only API found with file:line references and migration path}
+
+### Runtime & Deployment
+
+**Score: 🟢/🟠/🔴**
+
+| Signal | Status | Evidence |
+|--------|--------|----------|
+| Hosting Model | 🟢/🟠/🔴 | {e.g., "IIS-hosted via System.Web pipeline (Global.asax present)"} |
+| Containerization | 🟢/🟠/🔴 | {e.g., "No Dockerfile, no obvious blockers"} |
+| CI/CD Pipeline | 🟢/🟠/🔴 | {e.g., "Azure DevOps YAML pipeline detected"} |
+| Windows-Only Deps | 🟢/🟠/🔴 | {e.g., "EventLog usage (replaceable), no blocking deps"} |
+| Platform Target | 🟢/🟠/🔴 | {e.g., "AnyCPU, no native dependencies"} |
+
+**Windows-Only Dependency Details:**
+- {List each Windows-only dep with severity (blocking/replaceable) and file:line references}
+
+**Deployment Observations:**
+- {Observations about deployment topology, environment coupling, or portability concerns}
 
 ---
 
