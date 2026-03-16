@@ -51,27 +51,27 @@
 
 ### Data Flow Diagram
 
-> Mermaid architecture diagram showing inbound/outbound data flows, dependencies, databases, queues, and external integrations. Use `architecture-beta` for service-oriented layouts or `flowchart` for simpler flows.
+> Mermaid flowchart diagram showing inbound/outbound data flows, dependencies, databases, queues, and external integrations. Always use `flowchart LR` — do NOT use `architecture-beta` or `block-beta` (experimental, poor rendering support).
 
 ```mermaid
-architecture-beta
-    group svc[{Service Display Name}]
+flowchart LR
+    subgraph svc["{Service Display Name}"]
+        api[Service API]
+        worker[Background Worker]
+        db[(Database Name)]
+    end
 
-    service api({Service API}) in svc
-    service worker({Background Worker}) in svc
-    service db(database)[{Database Name}] in svc
+    subgraph external["External Dependencies"]
+        upstream([Upstream Service])
+        downstream([Downstream Service])
+        queue[(Message Queue)]
+    end
 
-    group external[External Dependencies]
-
-    service upstream({Upstream Service}) in external
-    service downstream({Downstream Service}) in external
-    service queue(disk)[Message Queue] in external
-
-    upstream:R --> L:api
-    api:R --> L:db
-    api:B --> T:queue
-    queue:R --> L:worker
-    worker:R --> L:downstream
+    upstream --> api
+    api --> db
+    api -->|async| queue
+    queue --> worker
+    worker --> downstream
 ```
 
 {Replace the example above with actual architecture derived from code analysis. Guidelines:}
@@ -198,19 +198,19 @@ architecture-beta
 
 > Visual representation of existing test distribution.
 
-```mermaid
-block-beta
-    columns 1
-    e2e["🔺 E2E Tests\n{count} tests — {list what exists or 'None'}"]
-    int["🔶 Integration Tests\n{count} tests — {list what exists or 'None'}"]
-    unit["🟦 Unit Tests\n{count} tests — {list what exists or 'None'}"]
-    static["🟩 Static Analysis\n{list: analyzers, nullable context, warnings-as-errors, linting}"]
-
-    style e2e fill:#fee,stroke:#c33,color:#000
-    style int fill:#ffeebb,stroke:#cc9900,color:#000
-    style unit fill:#ddeeff,stroke:#3366cc,color:#000
-    style static fill:#ddffdd,stroke:#339933,color:#000
 ```
+┌─────────────────────────────────────────────────────────────┐
+│ E2E Tests: {count} — {list what exists or 'None'}      🔴  │
+├─────────────────────────────────────────────────────────────┤
+│ Integration Tests: {count} — {list or 'None'}           🟠  │
+├─────────────────────────────────────────────────────────────┤
+│ Unit Tests: {count} — {list or 'None'}                  🟢  │
+├─────────────────────────────────────────────────────────────┤
+│ Static Analysis: {analyzers, nullable, warnings-as-errors}  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> **Note:** Use a plain-text ASCII table for the testing trophy — do NOT use `block-beta` Mermaid diagrams (experimental, poor rendering support).
 
 {Replace with actual counts. Guidelines:}
 - {**E2E**: Selenium, Playwright, WebApplicationFactory with real DB, smoke tests}
@@ -218,6 +218,55 @@ block-beta
 - {**Unit**: Isolated tests with mocked dependencies, business logic in isolation}
 - {**Static Analysis**: Roslyn analyzers, nullable refs, `TreatWarningsAsErrors`, `.editorconfig`, StyleCop}
 - {Zero tests at a layer = "None" — this is the gap recommendations should address}
+
+#### Testing Trophy Gap Analysis
+
+> Components that should have tests but currently do not. Prioritized by risk.
+
+**Unit Test Gaps** (business logic without test coverage)
+
+| Component | File | Risk | Reason |
+|-----------|------|------|--------|
+| {ClassName} | {file:line} | High/Medium/Low | {e.g., "Complex fee calculation with 8 branches, no tests"} |
+
+**Integration Test Gaps** (infrastructure without test coverage)
+
+| Component | File | Risk | Reason |
+|-----------|------|------|--------|
+| {ClassName} | {file:line} | High/Medium/Low | {e.g., "6 SQL queries via EF6, no data tests"} |
+
+**E2E Test Gaps** (API endpoints without end-to-end coverage)
+
+| Endpoint | Controller | Risk | Reason |
+|----------|-----------|------|--------|
+| {route} | {ClassName} | High/Medium/Low | {e.g., "Financial mutation endpoint, no E2E test"} |
+
+**Static Analysis Gaps**
+- {e.g., "Nullable context not enabled"}
+- {e.g., "No .editorconfig"}
+
+#### Migration Safety Net
+
+> Render only when target framework is .NET Framework 4.x.
+> If .NET 6+, render: "Not applicable — service is already on a modern .NET runtime."
+
+> Tests needed before migrating from {current framework} to .NET 8+.
+> Without these, migration regressions may go undetected.
+
+| Category | What Needs Testing | Current Coverage | Priority |
+|----------|-------------------|-----------------|----------|
+| API Contracts | {N} controllers, {M} endpoints | {X} integration tests | 🔴/🟠/🟢 |
+| Data Access | EF6 DbContext with {N} entity types | {X} data tests | 🔴/🟠/🟢 |
+| Configuration | {N} custom config sections | {X} config tests | 🔴/🟠/🟢 |
+| Auth Pipeline | {auth type} in {N} files | {X} auth tests | 🔴/🟠/🟢 |
+
+**Pre-Migration Testing Checklist:**
+- [ ] Add characterization tests for all API endpoints (request/response snapshots)
+- [ ] Add data access tests verifying query results (golden master for EF Core comparison)
+- [ ] {Additional items specific to findings}
+
+**Migration Risk Without Tests:**
+{1-2 sentences summarizing risk if migration proceeds without the safety net}
 
 #### Recommended Testing Strategy
 

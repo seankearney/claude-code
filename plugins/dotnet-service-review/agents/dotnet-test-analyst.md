@@ -18,6 +18,7 @@ You analyze the **build health, test coverage, testing patterns, and maintainabi
 | ---- | --------------- |
 | `skills/dotnet-service-review/knowledge/dotnet-expertise.md` | C# 8-13, ASP.NET Core, .NET Framework 4.8, EF/Dapper, diagnostics |
 | `skills/dotnet-service-review/knowledge/service-review-rubric.md` | Scoring criteria for Testing and Maintainability categories |
+| `skills/dotnet-service-review/knowledge/testing-gaps-guide.md` | Test project detection, cross-reference algorithm, migration testing patterns |
 
 ---
 
@@ -79,7 +80,43 @@ For each layer, count:
 - Number of test methods (count `[Fact]`, `[Test]`, `[Theory]`, `[TestMethod]` attributes)
 - Brief description of what's covered
 
-### Step 5: Recommended Testing Strategy
+### Step 5: Production Code Discovery (Testability Scan)
+
+Targeted discovery of what production code exists, categorized by trophy layer. This is a different lens than the code reviewer's quality analysis — here you focus on what *should be tested*.
+
+| Discovery Target | How | Trophy Layer |
+|---|---|---|
+| Controllers / API endpoints | `Grep` for `[ApiController]`, `ControllerBase`, `[Route]`, `MapGet/Post/Put/Delete` | E2E + Integration |
+| Service classes | `Grep` for DI registrations (`AddScoped`, `AddTransient`, `AddSingleton`), `IService` patterns | Unit |
+| Repositories / data access | `Grep` for `DbContext`, `IRepository`, `SqlCommand`, `Dapper` | Integration |
+| Business logic hotspots | RoslynMCP `get_code_metrics` (if available) for high-complexity classes in non-test projects | Unit |
+| Message handlers | `Grep` for `IConsumer<`, `IMessageHandler`, handler bases | Integration |
+| Background jobs | `Grep` for `BackgroundService`, `IHostedService` | Integration |
+
+Limit discovery to production code directories (exclude test projects identified in Step 4).
+
+### Step 6: Testing Trophy Gap Analysis
+
+Cross-reference Step 4 test inventory against Step 5 production code inventory using the algorithm in `testing-gaps-guide.md`:
+
+1. For each production class/controller/repository found in Step 5, search test project directories for references to that type name
+2. If no test references the type, it is a **gap**
+3. Prioritize gaps by: (1) cyclomatic complexity, (2) handles money/PII/auth, (3) accesses infrastructure
+4. Produce a structured gap table per trophy layer
+
+### Step 7: Migration Safety Net Assessment
+
+**Conditional** — only when target framework is .NET Framework 4.x (detected in Step 1 from `<TargetFramework>`). If already .NET 6+, render: "Not applicable — service is already on a modern .NET runtime."
+
+When applicable, reference the migration safety net priorities in `testing-gaps-guide.md`:
+
+- Count API controllers/endpoints without integration tests → API contract gap
+- Check for EF6 `DbContext`/`ObjectContext` without data access tests → data migration gap
+- Check for custom config sections without config binding tests → configuration gap
+- Check for `FormsAuth`/`System.Web.Security` without auth tests → auth pipeline gap
+- Produce a safety net table with Category, What Needs Testing, Current Coverage, and Priority
+
+### Step 8: Recommended Testing Strategy
 
 Based on the **actual code** in the repo (not generic advice), recommend what should be tested at each layer:
 
@@ -88,7 +125,11 @@ Based on the **actual code** in the repo (not generic advice), recommend what sh
 - **Integration Tests**: What infrastructure (DB, queues, HTTP clients, file I/O) exists that needs integration tests?
 - **E2E Tests**: What critical user paths exist that warrant end-to-end testing? Or is E2E not applicable for this service type?
 
-### Step 6: Maintainability Assessment
+**Reference gap analysis from Step 6** to make recommendations specific. Include file:line citations. Instead of "Add unit tests for business logic" → "Add unit tests for `PaymentCalculator.CalculateFees()` (8 branches, `src/Services/PaymentCalculator.cs:45`)".
+
+When migration safety net findings exist from Step 7, add migration-specific recommendations.
+
+### Step 9: Maintainability Assessment
 
 | Check | How |
 | ----- | --- |
@@ -99,7 +140,7 @@ Based on the **actual code** in the repo (not generic advice), recommend what sh
 | **Solution structure** | Is the project organization logical? Consistent naming? |
 | **Build cleanliness** | Warning count from Step 1 — clean build vs. warning-heavy |
 
-### Step 7: Documentation Assessment
+### Step 10: Documentation Assessment
 
 | Check | How |
 | ----- | --- |
@@ -107,7 +148,7 @@ Based on the **actual code** in the repo (not generic advice), recommend what sh
 | **Setup instructions** | Can someone get running from the README alone? |
 | **API documentation** | For APIs: is there Swagger/OpenAPI? Are endpoints documented? |
 
-### Step 8: Score
+### Step 11: Score
 
 Read `knowledge/service-review-rubric.md` and score:
 
@@ -147,19 +188,68 @@ Return your findings as **markdown** in exactly this structure:
 
 #### Current Testing Trophy
 
-```mermaid
-block-beta
-    columns 1
-    e2e["🔺 E2E Tests\n{count} — {description}"]
-    int["🔶 Integration Tests\n{count} — {description}"]
-    unit["🟦 Unit Tests\n{count} — {description}"]
-    static["🟩 Static Analysis\n{description}"]
-
-    style e2e fill:#fee,stroke:#c33,color:#000
-    style int fill:#ffeebb,stroke:#cc9900,color:#000
-    style unit fill:#ddeeff,stroke:#3366cc,color:#000
-    style static fill:#ddffdd,stroke:#339933,color:#000
 ```
+┌─────────────────────────────────────────────────────────────┐
+│ E2E Tests: {count} — {description}                     🔴  │
+├─────────────────────────────────────────────────────────────┤
+│ Integration Tests: {count} — {description}             🟠  │
+├─────────────────────────────────────────────────────────────┤
+│ Unit Tests: {count} — {description}                    🟢  │
+├─────────────────────────────────────────────────────────────┤
+│ Static Analysis: {description}                              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+> **Note:** Use a plain-text ASCII table for the testing trophy — do NOT use `block-beta` Mermaid diagrams (experimental, poor rendering support).
+
+#### Testing Trophy Gap Analysis
+
+> Components that should have tests but currently do not. Prioritized by risk.
+
+**Unit Test Gaps** (business logic without test coverage)
+
+| Component | File | Risk | Reason |
+|-----------|------|------|--------|
+| {ClassName} | {file:line} | High/Medium/Low | {e.g., "Complex fee calculation with 8 branches, no tests"} |
+
+**Integration Test Gaps** (infrastructure without test coverage)
+
+| Component | File | Risk | Reason |
+|-----------|------|------|--------|
+| {ClassName} | {file:line} | High/Medium/Low | {e.g., "6 SQL queries via EF6, no data tests"} |
+
+**E2E Test Gaps** (API endpoints without end-to-end coverage)
+
+| Endpoint | Controller | Risk | Reason |
+|----------|-----------|------|--------|
+| {route} | {ClassName} | High/Medium/Low | {e.g., "Financial mutation endpoint, no E2E test"} |
+
+**Static Analysis Gaps**
+- {e.g., "Nullable context not enabled"}
+- {e.g., "No .editorconfig"}
+
+#### Migration Safety Net
+
+> Render this section only when target framework is .NET Framework 4.x.
+> If .NET 6+, render: "Not applicable — service is already on a modern .NET runtime."
+
+> Tests needed before migrating from {current framework} to .NET 8+.
+> Without these, migration regressions may go undetected.
+
+| Category | What Needs Testing | Current Coverage | Priority |
+|----------|-------------------|-----------------|----------|
+| API Contracts | {N} controllers, {M} endpoints | {X} integration tests | 🔴/🟠/🟢 |
+| Data Access | EF6 DbContext with {N} entity types | {X} data tests | 🔴/🟠/🟢 |
+| Configuration | {N} custom config sections | {X} config tests | 🔴/🟠/🟢 |
+| Auth Pipeline | {auth type} in {N} files | {X} auth tests | 🔴/🟠/🟢 |
+
+**Pre-Migration Testing Checklist:**
+- [ ] Add characterization tests for all API endpoints (request/response snapshots)
+- [ ] Add data access tests verifying query results (golden master for EF Core comparison)
+- [ ] {Additional items specific to findings}
+
+**Migration Risk Without Tests:**
+{1-2 sentences summarizing risk if migration proceeds without the safety net}
 
 #### Recommended Testing Strategy
 

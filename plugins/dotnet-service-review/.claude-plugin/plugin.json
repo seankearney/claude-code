@@ -1,6 +1,6 @@
 {
   "name": "dotnet-service-review",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Full .NET service health reviews using four specialist agents (architect, code reviewer, test analyst, modernization analyst) working in parallel. Scores code quality, .NET practices, testing, security, maintainability, and modernization readiness.",
   "author": {
     "name": "Sean Kearney",

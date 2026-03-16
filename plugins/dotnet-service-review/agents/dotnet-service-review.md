@@ -74,7 +74,7 @@ Wait for all four agents to complete. Each returns a markdown fragment:
 
 - **dotnet-architect** returns: `## Wiki Documentation` (if wiki available) + `## Architecture & Data Flow` (including Contributor & Bus Factor)
 - **dotnet-code-reviewer** returns: `## Critical Findings` + `### Code Quality & Design` (with Roslyn metrics table) + `### .NET Practices` + `### Security` (with inline code snippets for vulnerabilities)
-- **dotnet-test-analyst** returns: `## Build & Test Results` + `### Testing` (with trophy) + `### Maintainability` + `## Documentation Status`
+- **dotnet-test-analyst** returns: `## Build & Test Results` + `### Testing` (with trophy + `#### Testing Trophy Gap Analysis` + `#### Migration Safety Net`) + `### Maintainability` + `## Documentation Status`
 - **dotnet-modernization-analyst** returns: `## Modernization Readiness` (with Migration Complexity and Runtime & Deployment subsections)
 
 **Extract tool availability:** Check the dotnet-code-reviewer output for the `## Review Tools` section. Record whether RoslynMCP was `available` or `unavailable`. Surface this in the final report's Additional Notes section.
@@ -118,7 +118,7 @@ Combine the agent outputs into a single report following the template structure:
 6. **Category Scores** — summary table with all 5 scores
 7. **Documentation Status** — from dotnet-test-analyst
 8. **Critical Findings** — from dotnet-code-reviewer
-9. **Detailed Findings** — Code Quality, .NET Practices, Testing (with trophy), Security, Maintainability
+9. **Detailed Findings** — Code Quality, .NET Practices, Testing (with trophy, gap analysis, and migration safety net), Security, Maintainability
 10. **Modernization Readiness** — from dotnet-modernization-analyst (separate from health score)
 11. **Documentation Details** — from dotnet-test-analyst
 12. **Recommendations** — synthesize top 3 from all agents' findings, prioritized by impact

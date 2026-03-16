@@ -128,13 +128,17 @@ Return your findings as **markdown** in exactly this structure. The orchestrator
 ### Data Flow Diagram
 
 ```mermaid
-architecture-beta
-    group svc[{Service Name}]
-    {... actual components ...}
-    group external[External Dependencies]
-    {... actual dependencies ...}
+flowchart LR
+    subgraph svc["{Service Name}"]
+        {... actual components ...}
+    end
+    subgraph external["External Dependencies"]
+        {... actual dependencies ...}
+    end
     {... labeled edges with protocols ...}
 ```
+
+> **IMPORTANT:** Always use `flowchart LR` for architecture diagrams. Do NOT use `architecture-beta` or `block-beta` — these are experimental Mermaid types with poor rendering support across GitHub, VS Code, and most Markdown viewers. Use standard Mermaid node shapes: `[]` for services, `[()]` for databases/datastores, `([])` for external services, `[/ /]` for files. Use `subgraph` for grouping and `-->|label|` for edge labels.
 
 ### Key Integration Points
 
